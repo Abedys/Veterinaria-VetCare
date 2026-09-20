@@ -1,0 +1,177 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+
+    <div class="row">
+        <div class="col-md-8 d-flex align-items-center gap-2">
+            <i class="bi bi-paw fs-3"></i>
+            <h1 class="mb-0 text-primary">Listado de Mascotas</h1>
+        </div>
+
+        <div class="col-md-4 text-end">
+            <button type="button" class="btn btn-primary" onclick="openModal(false)">
+                <i class="fa-solid fa-circle-plus"></i>
+                Crear Mascota
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" id="tbmascota">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Especie</th>
+                        <th>Raza</th>
+                        <th>Propietario</th>
+                        <th>Fecha Nacimiento</th>
+                        <th>Peso</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script type="text/javascript">
+
+            var listMascota = [];
+
+            $(document).ready(function () {
+                getAllMascota();
+            });
+
+            // ============================================
+            // Traer todas las mascotas desde la API
+            // ============================================
+            function getAllMascota() {
+                console.log("hola");
+                $.ajax({
+                    url: '@Url.Action("GetAllMascotas", "Mascotas")', // ajusta el controller si es distinto
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (result) {
+                        console.log(result);
+                        listMascota = result;
+                        console.log(listMascota);
+                        loadTable(listMascota);
+                    },
+                    error: function (error) {
+                        errorHttp(error);
+                    }
+                });
+            }
+
+            // ============================================
+            // Configuración del DataTable
+            // ============================================
+            function loadTable(data) {
+                $('#tbmascota').DataTable({
+                    data: data,
+                    destroy: true,
+                    responsive: true,
+                    pageLength: 10,
+                    language: {
+                        search: "Buscar:",
+                        lengthMenu: "Mostrar _MENU_ mascotas",
+                        info: "Mostrando _START_ a _END_ de _TOTAL_ mascotas",
+                        infoEmpty: "No hay mascotas disponibles",
+                        infoFiltered: "(filtrado de _MAX_ mascotas)",
+                        zeroRecords: "No se encontraron mascotas",
+                        paginate: {
+                            first: "Primero",
+                            last: "Último",
+                            next: "Siguiente",
+                            previous: "Anterior"
+                        }
+                    },
+                    columns: [
+                        // Nombre
+                        { data: 'nombre' },
+
+                        // Especie
+                        {
+                            data: 'especie',
+                            render: function (data) {
+                                return `<span class="badge rounded-pill bg-success">${data ?? ''}</span>`;
+                            }
+                        },
+
+                        // Raza
+                        {
+                            data: 'raza',
+                            render: function (data) {
+                                return `<span class="badge rounded-pill bg-info text-dark">${data ?? ''}</span>`;
+                            }
+                        },
+
+                        // Propietario
+                        { data: 'nombrePropietario' },
+
+                        // Fecha Nacimiento
+                        {
+                            data: 'fechaNacimiento',
+                            render: function (data) {
+                                if (!data) return '';
+                                const fecha = new Date(data);
+                                return fecha.toLocaleDateString('es-CO');
+                            }
+                        },
+
+                        // Peso
+                        {
+                            data: 'peso',
+                            render: function (data) {
+                                return `<span class="fw-semibold">${data} kg</span>`;
+                            }
+                        },
+
+                        // Acciones
+                        {
+                            data: null,
+                            render: function (data) {
+                                const id = data.idMascota; // 👈 ajusta si tu DTO usa otro nombre
+
+                                return `
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                onclick="editMascota('${id}')"
+                                                title="Editar mascota">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="deleteMascota('${id}')"
+                                                title="Eliminar mascota">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                        }
+                    ]
+                });
+            }
+
+            // ============================================
+            // Placeholders (los implementas después)
+            // ============================================
+            function editMascota(id) {
+                console.log('editar', id);
+            }
+
+            function deleteMascota(id) {
+                console.log('eliminar', id);
+            }
+
+        </script>
+    }
+
+}
