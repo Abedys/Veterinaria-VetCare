@@ -1,0 +1,396 @@
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+}
+
+<div class="row mb-3">
+    <div class="col-md-8 d-flex align-items-center gap-2">
+        <i class="bi bi-people-fill fs-3 text-primary"></i>
+        <h1 class="mb-0 text-primary">Gestión de Usuarios</h1>
+    </div>
+
+    <div class="col-md-4 text-end">
+        <button type="button" class="btn btn-primary" onclick="openModalUsuario()">
+            <i class="fa-solid fa-user-plus me-1"></i>
+            Crear Usuario
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle w-100" id="tbusuario">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Propietario asociado</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Crear Usuario -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitleUsuario"><i class="bi bi-person-plus me-1"></i> Crear Usuario</h5>
+                <button type="button" class="btn-close" onclick="clearFormUsuario()"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formUsuario">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email / Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtUserNameUsuario" maxlength="20" placeholder="Ej: juan@gmail.com" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Rol <span class="text-danger">*</span></label>
+                            <select id="cmbRolUsuario" class="form-select" onchange="changeCmbRolUsuario()">
+                                <option value="" disabled selected>Seleccione un rol</option>
+                                <option value="2">Admin</option>
+                                <option value="3">Cliente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1" id="sectionPasswordUsuario">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <input type="password" class="form-control" id="txtPasswordUsuario" maxlength="20" placeholder="Ingresa la contraseña" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Confirmar Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" class="form-control" id="txtConfirmPasswordUsuario" maxlength="20" placeholder="Repite la contraseña" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1" id="sectionPropietarioUsuario" style="display:none;">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Propietario <span class="text-danger">*</span></label>
+                            <select id="cmbPropietarioDisponible" class="form-select">
+                                <option value="" disabled selected>Seleccione un propietario</option>
+                            </select>
+                            <small class="text-muted">Solo se muestran propietarios que aún no tienen un usuario asociado.</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="clearFormUsuario()">Cerrar</button>
+                <button id="btnModalSaveUsuario" type="button" class="btn btn-success" onclick="onSaveUsuario()">Crear usuario</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        var listUsuarios = [];
+        var listPropietariosDisponibles = [];
+
+        $(document).ready(function () {
+            getAllUsuarios();
+        });
+
+        // ============================================
+        // Consulta y Render de la Tabla
+        // ============================================
+        function getAllUsuarios() {
+            $.ajax({
+                url: '@Url.Action("GetUsuarios", "GestionUsuarios")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    listUsuarios = result;
+                    loadTableUsuarios(listUsuarios);
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function loadTableUsuarios(data) {
+            $('#tbusuario').DataTable({
+                data: data,
+                destroy: true,
+                responsive: true,
+                pageLength: 10,
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            var inicio = row.id.substring(0, 8);
+                            return '<code class="text-muted">' + inicio + '…</code>';
+                        }
+                    },
+                    {
+                        data: 'userName',
+                        render: function (data, type, row) {
+                            var nombre = row.nombre;
+                            if (row.apellido) {
+                                nombre += ' ' + row.apellido;
+                            }
+                            return '<span class="fw-bold">' + data + '</span><br/><small class="text-muted">' + (row.apellido ? nombre : row.userName) + '</small>';
+                        }
+                    },
+                    {
+                        data: 'rol',
+                        render: function (data) {
+                            var classBadge = data === 'SuperAdmin' ? 'bg-dark'
+                                : data === 'Admin' ? 'bg-primary'
+                                : 'bg-success';
+                            return '<span class="badge ' + classBadge + '">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: 'propietario',
+                        render: function (data) {
+                            if (!data) {
+                                return '<span class="text-muted">-</span>';
+                            }
+                            return '<span class="badge bg-info bg-opacity-25 text-dark"><i class="bi bi-person-heart me-1"></i>' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: 'activo',
+                        render: function (data) {
+                            if (data) {
+                                return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Activo</span>';
+                            }
+                            return '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactivo</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row) {
+                            if (row.rol === 'SuperAdmin') {
+                                return '<span class="badge bg-secondary" title="La cuenta SuperAdmin no se puede desactivar ni eliminar"><i class="bi bi-shield-lock me-1"></i>Protegida</span>';
+                            }
+
+                            var btnEstado = row.activo
+                                ? '<button type="button" class="btn btn-sm btn-outline-warning" onclick="updateEstadoUsuario(\'' + row.id + '\', false)" title="Desactivar usuario"><i class="bi bi-slash-circle"></i></button>'
+                                : '<button type="button" class="btn btn-sm btn-outline-success" onclick="updateEstadoUsuario(\'' + row.id + '\', true)" title="Activar usuario"><i class="bi bi-check2-circle"></i></button>';
+
+                            var btnEliminar = '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteUsuario(\'' + row.id + '\')" title="Eliminar usuario"><i class="bi bi-trash"></i></button>';
+
+                            return '<div class="d-flex justify-content-center align-items-center gap-2">' + btnEstado + btnEliminar + '</div>';
+                        }
+                    }
+                ]
+            });
+        }
+
+        // ============================================
+        // Modal Crear Usuario
+        // ============================================
+        function openModalUsuario() {
+            $('#modalUsuario').modal('show');
+        }
+
+        function clearFormUsuario() {
+            $('#txtUserNameUsuario').val('');
+            $('#txtPasswordUsuario').val('');
+            $('#txtConfirmPasswordUsuario').val('');
+            $('#cmbRolUsuario').val('');
+            $('#cmbPropietarioDisponible').empty().append('<option value="" disabled selected>Seleccione un propietario</option>');
+            $('#sectionPropietarioUsuario').hide();
+            $('#sectionPasswordUsuario').show();
+            $('#modalUsuario').modal('hide');
+        }
+
+        function changeCmbRolUsuario() {
+            var rol = $('#cmbRolUsuario').val();
+
+            if (rol == '3') {
+                $('#sectionPasswordUsuario').hide();
+                $('#sectionPropietarioUsuario').show();
+                getPropietariosDisponibles();
+            } else {
+                $('#sectionPasswordUsuario').show();
+                $('#sectionPropietarioUsuario').hide();
+                $('#cmbPropietarioDisponible').empty().append('<option value="" disabled selected>Seleccione un propietario</option>');
+            }
+        }
+
+        function getPropietariosDisponibles() {
+            $.ajax({
+                url: '@Url.Action("GetPropietariosDisponibles", "GestionUsuarios")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    listPropietariosDisponibles = result;
+                    var cmb = $('#cmbPropietarioDisponible');
+                    cmb.empty();
+                    cmb.append('<option value="" disabled selected>Seleccione un propietario</option>');
+                    $.each(result, function (i, item) {
+                        cmb.append('<option value="' + item.id + '">' + item.nombreCompleto + '</option>');
+                    });
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        // ============================================
+        // Operaciones CRUD
+        // ============================================
+        function validateFormUsuario() {
+            var userName = $.trim($('#txtUserNameUsuario').val());
+            var rol = $('#cmbRolUsuario').val();
+
+            if (userName === '') {
+                $('#txtUserNameUsuario').focus();
+                toastMessage('warning', 'El email/username es obligatorio');
+                return false;
+            }
+
+            if (userName.length < 4) {
+                $('#txtUserNameUsuario').focus();
+                toastMessage('warning', 'El usuario debe ser de mínimo 4 caracteres');
+                return false;
+            }
+
+            if (!rol) {
+                $('#cmbRolUsuario').focus();
+                toastMessage('warning', 'Debe seleccionar un rol');
+                return false;
+            }
+
+            if (rol == '3') {
+                if (!$('#cmbPropietarioDisponible').val()) {
+                    $('#cmbPropietarioDisponible').focus();
+                    toastMessage('warning', 'Debe seleccionar un propietario');
+                    return false;
+                }
+            } else {
+                var password = $('#txtPasswordUsuario').val();
+                var confirmPassword = $('#txtConfirmPasswordUsuario').val();
+
+                if (password === '') {
+                    $('#txtPasswordUsuario').focus();
+                    toastMessage('warning', 'La contraseña es obligatoria');
+                    return false;
+                }
+
+                if (confirmPassword === '') {
+                    $('#txtConfirmPasswordUsuario').focus();
+                    toastMessage('warning', 'La confirmación de contraseña es obligatoria');
+                    return false;
+                }
+
+                if (password !== confirmPassword) {
+                    $('#txtConfirmPasswordUsuario').focus();
+                    toastMessage('warning', 'La contraseña y la confirmación no coinciden');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function onSaveUsuario() {
+            if (!validateFormUsuario()) return;
+
+            var rol = $('#cmbRolUsuario').val();
+            var entity = {
+                userName: $.trim($('#txtUserNameUsuario').val()),
+                idRol: parseInt(rol)
+            };
+
+            if (rol == '3') {
+                entity.idPropietario = parseInt($('#cmbPropietarioDisponible').val());
+            } else {
+                entity.password = $('#txtPasswordUsuario').val();
+                entity.confirmPassword = $('#txtConfirmPasswordUsuario').val();
+            }
+
+            $('#btnModalSaveUsuario').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Creando...');
+
+            $.ajax({
+                url: '@Url.Action("AddUsuario", "GestionUsuarios")',
+                method: 'POST',
+                data: JSON.stringify(entity),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (result) {
+                    var datos = result.result;
+                    if (datos.passwordTemporal) {
+                        Swal.fire({
+                            title: 'Usuario Cliente Creado',
+                            html: 'Usuario creado exitosamente.<br/><strong>Contraseña temporal:</strong> <code>' + datos.passwordTemporal + '</code><br/><small>El usuario debe cambiarla al iniciar sesión.</small>',
+                            icon: 'success',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    } else {
+                        alertSucces('Usuario creado exitosamente');
+                    }
+                    clearFormUsuario();
+                    getAllUsuarios();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                },
+                complete: function () {
+                    $('#btnModalSaveUsuario').prop('disabled', false).html('<i class="fa-solid fa-user-plus me-1"></i> Crear usuario');
+                }
+            });
+        }
+
+        function updateEstadoUsuario(id, activo) {
+            $.ajax({
+                url: '@Url.Action("UpdateEstadoUsuario", "GestionUsuarios")',
+                method: 'PUT',
+                data: { id: id, activo: activo },
+                dataType: 'json',
+                success: function () {
+                    toastMessage('success', activo ? 'Usuario activado' : 'Usuario desactivado');
+                    getAllUsuarios();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function deleteUsuario(id) {
+            alertDelete().then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteUsuario", "GestionUsuarios")',
+                        method: 'DELETE',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function () {
+                            toastMessage('success', 'Usuario eliminado');
+                            getAllUsuarios();
+                        },
+                        error: function (error) {
+                            errorHttp(error);
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

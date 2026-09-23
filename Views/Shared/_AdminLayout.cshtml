@@ -90,6 +90,15 @@
                                     <i class="bi bi-bezier2 me-2"></i>Razas
                                 </a>
                             </li>
+                            @if (Context.Session.GetString("UserRol") == "SuperAdmin")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "GestionUsuarios" ? "active" : "")"
+                                       asp-controller="GestionUsuarios" asp-action="Index">
+                                        <i class="bi bi-people me-2"></i>Gestión de Usuarios
+                                    </a>
+                                </li>
+                            }
                         </ul>
                     </div>
                 </nav>

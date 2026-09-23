@@ -118,6 +118,73 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
+        // Cambio de contraseña obligatorio para cuentas creadas con contraseña temporal
+        var debeCambiarPassword = '@Context.Session.GetString("DebeCambiarPassword")';
+
+        $(document).ready(function () {
+            if (debeCambiarPassword === 'true') {
+                Swal.fire({
+                    title: 'Debes cambiar tu contraseña',
+                    html:
+                        '<div class="text-start">' +
+                        '   <label class="form-label fw-semibold">Nueva contraseña</label>' +
+                        '   <input type="password" id="swal-new-password" class="form-control mb-3" maxlength="20" placeholder="Ingresa tu nueva contraseña" />' +
+                        '   <label class="form-label fw-semibold">Confirmar contraseña</label>' +
+                        '   <input type="password" id="swal-confirm-password" class="form-control" maxlength="20" placeholder="Repite la contraseña" />' +
+                        '</div>',
+                    icon: 'warning',
+                    showCancelButton: false,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Cambiar contraseña',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        $('#swal-new-password').on('keypress', function (e) {
+                            if (e.which === 13) { Swal.clickConfirm(); }
+                        });
+                        $('#swal-confirm-password').on('keypress', function (e) {
+                            if (e.which === 13) { Swal.clickConfirm(); }
+                        });
+                    },
+                    preConfirm: function () {
+                        var pwd = $('#swal-new-password').val();
+                        var confirm = $('#swal-confirm-password').val();
+
+                        if (!pwd || !confirm) {
+                            Swal.showValidationMessage('Debes llenar ambos campos');
+                            return false;
+                        }
+
+                        if (pwd !== confirm) {
+                            Swal.showValidationMessage('Las contraseñas no coinciden');
+                            return false;
+                        }
+
+                        return new Promise(function (resolve, reject) {
+                            $.ajax({
+                                url: '@Url.Action("ChangePassword", "User")',
+                                method: 'POST',
+                                dataType: 'json',
+                                data: { password: pwd, confirmPassword: confirm },
+                                success: function (result) {
+                                    resolve(result);
+                                },
+                                error: function (error) {
+                                    reject(error.responseJSON?.message || 'Error al cambiar la contraseña');
+                                }
+                            });
+                        });
+                    }
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        toastMessage('success', 'Contraseña actualizada correctamente');
+                    }
+                });
+            }
+        });
+    </script>
+
+    <script>
         function toastMessage(type, message) {
             const Toast = Swal.mixin({
                 toast: true,
