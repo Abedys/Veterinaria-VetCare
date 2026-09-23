@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MVC.Data.DTO;
 using Microsoft.AspNetCore.Mvc.Filters;
-using MVC.Common.Execptions;
+using MVC.Common.Exceptions;
 
 namespace Veterinaria.Handlers
 {

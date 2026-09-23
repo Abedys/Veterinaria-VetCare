@@ -1,0 +1,134 @@
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<!-- Encabezado -->
+<div class="row mb-3">
+    <div class="col-md-12 d-flex align-items-center gap-2">
+        <i class="bi bi-person-lines-fill fs-3 text-success"></i>
+        <h1 class="mb-0 text-success">Mi Perfil</h1>
+    </div>
+</div>
+
+<!-- Tarjeta de Perfil -->
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form id="formPerfil">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="txtUserName" readonly />
+                        <small class="text-muted">El nombre de usuario no se puede cambiar.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtNombre" placeholder="Ej: María" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtApellido" placeholder="Ej: Pérez" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <input type="tel" class="form-control" id="txtTelefono" placeholder="Ej: 3001234567" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" id="txtEmail" placeholder="Ej: maria@mail.com" />
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-semibold">Dirección</label>
+                        <input type="text" class="form-control" id="txtDireccion" placeholder="Ej: Calle 1 # 2 - 3" />
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-success" onclick="savePerfil()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            getPerfil();
+        });
+
+        function getPerfil() {
+            $.ajax({
+                url: '@Url.Action("GetPerfilCliente", "Clientes")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    populatePerfil(result);
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function populatePerfil(perfil) {
+            if (!perfil) return;
+            $('#txtUserName').val(perfil.userName);
+            $('#txtNombre').val(perfil.nombre);
+            $('#txtApellido').val(perfil.apellido);
+            $('#txtTelefono').val(perfil.telefono ?? '');
+            $('#txtEmail').val(perfil.email ?? '');
+            $('#txtDireccion').val(perfil.direccion ?? '');
+        }
+
+        function validatePerfil() {
+            if ($.trim($('#txtNombre').val()) === '') {
+                $('#txtNombre').focus();
+                toastMessage('warning', 'El nombre es obligatorio');
+                return false;
+            }
+
+            if ($.trim($('#txtApellido').val()) === '') {
+                $('#txtApellido').focus();
+                toastMessage('warning', 'El apellido es obligatorio');
+                return false;
+            }
+
+            return true;
+        }
+
+        function savePerfil() {
+            if (!validatePerfil()) return;
+
+            var dto = {
+                nombre: $.trim($('#txtNombre').val()),
+                apellido: $.trim($('#txtApellido').val()),
+                telefono: $.trim($('#txtTelefono').val()),
+                email: $.trim($('#txtEmail').val()),
+                direccion: $.trim($('#txtDireccion').val())
+            };
+
+            $.ajax({
+                url: '@Url.Action("UpdatePerfilCliente", "Clientes")',
+                method: 'PUT',
+                data: JSON.stringify(dto),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (result) {
+                    alertSucces('Perfil actualizado exitosamente');
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+    </script>
+}

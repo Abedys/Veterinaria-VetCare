@@ -1,0 +1,103 @@
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4 mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <i class="bi bi-shield-lock fs-3"></i>
+                <h4 class="mb-0 mt-1">Iniciar Sesión</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="formLogin" autocomplete="off">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre de Usuario <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="txtUserName" maxlength="20" placeholder="Ingresa tu usuario" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control" id="txtPassword" maxlength="20" placeholder="Ingresa tu contraseña" />
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="button" id="btnLogin" class="btn btn-primary btn-lg" onclick="onLogin()">
+                            <i class="fa-solid fa-right-to-bracket me-1"></i> Entrar
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <span class="text-muted">¿No tienes cuenta?</span>
+                        <a class="text-primary fw-semibold text-decoration-none" asp-controller="User" asp-action="Register">Regístrate aquí</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#txtUserName').on('keypress', function (e) {
+                if (e.which === 13) { onLogin(); }
+            });
+            $('#txtPassword').on('keypress', function (e) {
+                if (e.which === 13) { onLogin(); }
+            });
+        });
+
+        function onLogin() {
+            var userName = $.trim($('#txtUserName').val());
+            var password = $('#txtPassword').val();
+
+            if (userName === '') {
+                alertWarning('El nombre de usuario es requerido.');
+                $('#txtUserName').focus();
+                return;
+            }
+
+            if (userName.length < 4) {
+                alertWarning('El usuario debe ser de mínimo 4 caracteres.');
+                $('#txtUserName').focus();
+                return;
+            }
+
+            if (password === '') {
+                alertWarning('La contraseña es requerida.');
+                $('#txtPassword').focus();
+                return;
+            }
+
+            $('#btnLogin').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Validando...');
+
+            $.ajax({
+                url: '@Url.Action("Login", "User")',
+                method: 'POST',
+                dataType: 'json',
+                data: { userName: userName, password: password },
+                success: function (result) {
+                    if (result.success) {
+                        toastMessage('success', 'Bienvenido ' + userName);
+                        setTimeout(function () {
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        }, 1000);
+                    }
+                },
+                error: function (error) {
+                    errorHttp(error);
+                },
+                complete: function () {
+                    $('#btnLogin').prop('disabled', false).html('<i class="fa-solid fa-right-to-bracket me-1"></i> Entrar');
+                }
+            });
+        }
+    </script>
+}

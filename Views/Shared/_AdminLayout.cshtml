@@ -17,54 +17,35 @@
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-heart-pulse text-primary"></i> Veterinaria
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-controls="sidebarCollapse"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                @{
-                    var isLogged = !string.IsNullOrEmpty(Context.Session.GetString("UserName"));
-                }
-
-                @if (isLogged)
-                {
-                    <div class="navbar-collapse collapse w-100" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto align-items-center gap-2">
-                            <li class="nav-item">
-                                <span class="navbar-text fw-semibold">
-                                    <i class="bi bi-person-circle text-primary me-1"></i>@Context.Session.GetString("FullName")
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-danger btn-sm" asp-area="" asp-controller="User" asp-action="Logout">
-                                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                }
-                else
-                {
-                    <div class="navbar-collapse collapse w-100" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto align-items-center gap-2">
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm" asp-area="" asp-controller="User" asp-action="Index">
-                                    <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-primary btn-sm" asp-area="" asp-controller="User" asp-action="Register">
-                                    <i class="bi bi-person-plus"></i> Registrarse
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                }
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto align-items-center gap-2">
+                        <li class="nav-item">
+                            <span class="navbar-text fw-semibold">
+                                <i class="bi bi-person-circle text-primary me-1"></i>@Context.Session.GetString("FullName")
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                <i class="bi bi-shield-lock me-1"></i>@Context.Session.GetString("UserRol")
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-danger btn-sm" asp-area="" asp-controller="User" asp-action="Logout">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
     </header>
@@ -78,20 +59,54 @@
 
     </div>
 
+    <div class="container-fluid admin-container">
+        <div class="row">
+            <!-- Sidebar vertical -->
+            <aside class="col-lg-2 col-md-3 d-md-block bg-white border-end sidebar-wrapper" id="sidebarCollapse">
+                <nav class="navbar navbar-expand-md align-content-start w-100 p-0">
+                    <div class="collapse navbar-collapse show d-md-flex flex-column align-items-stretch w-100" id="navbarCollapse">
+                        <ul class="nav flex-column w-100 mt-2">
+                            <li class="nav-item">
+                                <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Mascotas" ? "active" : "")"
+                                   asp-controller="Mascotas" asp-action="Index">
+                                    <i class="bi bi-paw me-2"></i>Mascotas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Propietarios" ? "active" : "")"
+                                   asp-controller="Propietarios" asp-action="Index">
+                                    <i class="bi bi-person-heart me-2"></i>Propietarios
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Especies" ? "active" : "")"
+                                   asp-controller="Especies" asp-action="Index">
+                                    <i class="bi bi-flower1 me-2"></i>Especies
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Raza" ? "active" : "")"
+                                   asp-controller="Raza" asp-action="Index">
+                                    <i class="bi bi-bezier2 me-2"></i>Razas
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </aside>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Veterinaria - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <!-- Contenido central -->
+            <main role="main" class="col-lg-10 col-md-9 content-wrapper p-4">
+                @RenderBody()
+            </main>
         </div>
-    </footer>
+
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2026 - Veterinaria - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </div>
+        </footer>
+    </div>
 
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

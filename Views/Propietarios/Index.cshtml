@@ -1,0 +1,290 @@
+@{
+    ViewData["Title"] = "Gestión de Propietarios";
+}
+
+<div class="row mb-3">
+    <div class="col-md-8 d-flex align-items-center gap-2">
+        <i class="bi bi-person-vcard fs-3 text-primary"></i>
+        <h1 class="mb-0 text-primary">Listado de Propietarios</h1>
+    </div>
+
+    <div class="col-md-4 text-end">
+        <button type="button" class="btn btn-primary" onclick="openPropietario(false)">
+            <i class="fa-solid fa-circle-plus me-1"></i>
+            Crear Propietario
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle w-100" id="tbpropietario">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Dirección</th>
+                            <th>Usuario</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Crear / Editar Propietario -->
+<div class="modal fade" id="modalPropietario" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="IdTitlePropietario">Crear Propietario</h5>
+                <button type="button" class="btn-close" onclick="clearFormPropietario()"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formPropietario">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtNombrePropietario" maxlength="50" placeholder="Ej: Juan" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtApellidoPropietario" maxlength="50" placeholder="Ej: Pérez" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <input type="text" class="form-control" id="txtTelefonoPropietario" maxlength="50" placeholder="Ej: 3001234567" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" id="txtEmailPropietario" maxlength="100" placeholder="Ej: juanperez@mail.com" />
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <input type="text" class="form-control" id="txtDireccionPropietario" maxlength="150" placeholder="Ej: Calle 1 # 2-3" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="clearFormPropietario()">Cerrar</button>
+                <button id="btnModalSavePropietario" type="button" class="btn btn-success" onclick="onSavePropietario()">Crear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        var idPropietario = 0;
+        var listPropietarios = [];
+
+        $(document).ready(function () {
+            getAllPropietarios();
+        });
+
+        function getAllPropietarios() {
+            $.ajax({
+                url: '@Url.Action("GetAllPropietarios", "Propietarios")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    loadTablePropietarios(result);
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function loadTablePropietarios(data) {
+            listPropietarios = data;
+            $('#tbpropietario').DataTable({
+                data: data,
+                destroy: true,
+                responsive: true,
+                pageLength: 10,
+                columns: [
+                    { data: 'nombre', className: 'fw-bold' },
+                    { data: 'apellido' },
+                    { data: 'telefono' },
+                    { data: 'email' },
+                    { data: 'direccion' },
+                    {
+                        data: 'userName',
+                        render: function (data) {
+                            if (!data) {
+                                return '<span class="text-muted">-</span>';
+                            }
+                            return '<span class="badge bg-primary bg-opacity-10 text-primary"><i class="bi bi-person me-1"></i>' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data) {
+                            return `
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            onclick="editPropietario(${data.id})"
+                                            title="Editar propietario">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="deletePropietario(${data.id})"
+                                            title="Eliminar propietario">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ]
+            });
+        }
+
+        function openPropietario(editMode) {
+            if (editMode) {
+                $('#IdTitlePropietario').html('<i class="bi bi-pencil-square me-1"></i> Editar Propietario');
+                $('#btnModalSavePropietario').html('Actualizar');
+            } else {
+                $('#IdTitlePropietario').html('<i class="bi bi-plus-circle me-1"></i> Crear Propietario');
+                $('#btnModalSavePropietario').html('Crear');
+            }
+            $('#modalPropietario').modal('show');
+        }
+
+        function clearFormPropietario() {
+            $('#txtNombrePropietario').val('');
+            $('#txtApellidoPropietario').val('');
+            $('#txtTelefonoPropietario').val('');
+            $('#txtEmailPropietario').val('');
+            $('#txtDireccionPropietario').val('');
+            idPropietario = 0;
+            $('#modalPropietario').modal('hide');
+        }
+
+        function editPropietario(id) {
+            var propietario = listPropietarios.find(p => p.id == id);
+
+            idPropietario = propietario.id;
+            $('#txtNombrePropietario').val(propietario.nombre);
+            $('#txtApellidoPropietario').val(propietario.apellido);
+            $('#txtTelefonoPropietario').val(propietario.telefono);
+            $('#txtEmailPropietario').val(propietario.email);
+            $('#txtDireccionPropietario').val(propietario.direccion);
+
+            openPropietario(true);
+        }
+
+        function onSavePropietario() {
+            var nombre = $.trim($('#txtNombrePropietario').val());
+            var apellido = $.trim($('#txtApellidoPropietario').val());
+
+            if (nombre === '') {
+                $('#txtNombrePropietario').focus();
+                toastMessage('warning', 'El nombre es obligatorio');
+                return;
+            }
+
+            if (apellido === '') {
+                $('#txtApellidoPropietario').focus();
+                toastMessage('warning', 'El apellido es obligatorio');
+                return;
+            }
+
+            if (idPropietario === 0) {
+                addPropietario(nombre, apellido);
+            } else {
+                updatePropietario(nombre, apellido);
+            }
+        }
+
+        function addPropietario(nombre, apellido) {
+            var entity = {
+                nombre: nombre,
+                apellido: apellido,
+                telefono: $('#txtTelefonoPropietario').val(),
+                email: $('#txtEmailPropietario').val(),
+                direccion: $('#txtDireccionPropietario').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("AddPropietario", "Propietarios")',
+                method: 'POST',
+                data: JSON.stringify(entity),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function () {
+                    alertSucces('Propietario creado exitosamente');
+                    clearFormPropietario();
+                    getAllPropietarios();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function updatePropietario(nombre, apellido) {
+            var entity = {
+                id: idPropietario,
+                nombre: nombre,
+                apellido: apellido,
+                telefono: $('#txtTelefonoPropietario').val(),
+                email: $('#txtEmailPropietario').val(),
+                direccion: $('#txtDireccionPropietario').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("UpdatePropietario", "Propietarios")',
+                method: 'PUT',
+                data: JSON.stringify(entity),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function () {
+                    alertSucces('Propietario actualizado exitosamente');
+                    clearFormPropietario();
+                    getAllPropietarios();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function deletePropietario(id) {
+            alertDelete().then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeletePropietario", "Propietarios")',
+                        method: 'DELETE',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function () {
+                            toastMessage('success', 'Propietario eliminado exitosamente');
+                            getAllPropietarios();
+                        },
+                        error: function (error) {
+                            errorHttp(error);
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

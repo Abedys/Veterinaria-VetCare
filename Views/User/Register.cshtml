@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "Registro de Usuario";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5 mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white text-center py-3">
+                <i class="bi bi-person-plus fs-3"></i>
+                <h4 class="mb-0 mt-1">Crear Cuenta</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="formRegister" autocomplete="off">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtNombre" maxlength="100" placeholder="Ej: Juan" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtApellido" maxlength="100" placeholder="Ej: Pérez" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre de Usuario <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" class="form-control" id="txtUserName" maxlength="20" placeholder="Mínimo 4 caracteres" />
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <input type="password" class="form-control" id="txtPassword" maxlength="20" placeholder="Ingresa tu contraseña" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Confirmar Contraseña <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" class="form-control" id="txtConfirmPassword" maxlength="20" placeholder="Repite tu contraseña" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <h6 class="text-muted"><i class="bi bi-person-vcard me-1"></i>Datos del Propietario</h6>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <input type="text" class="form-control" id="txtTelefono" maxlength="50" placeholder="Ej: 3001234567" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" class="form-control" id="txtEmail" maxlength="100" placeholder="Ej: ejemplo@mail.com" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Dirección</label>
+                        <input type="text" class="form-control" id="txtDireccion" maxlength="150" placeholder="Ej: Calle 1 # 2-3" />
+                    </div>
+
+                    <div class="alert alert-light border small text-muted mt-2 mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Al registrarte se te asignará el rol <strong>Cliente</strong> y se creará tu ficha de propietario automáticamente.
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="button" id="btnRegister" class="btn btn-success btn-lg" onclick="onRegister()">
+                            <i class="fa-solid fa-user-plus me-1"></i> Registrarse
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <span class="text-muted">¿Ya tienes cuenta?</span>
+                        <a class="text-primary fw-semibold text-decoration-none" asp-controller="User" asp-action="Index">Inicia sesión aquí</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#txtConfirmPassword').on('keypress', function (e) {
+                if (e.which === 13) { onRegister(); }
+            });
+        });
+
+        function onRegister() {
+            var nombre = $.trim($('#txtNombre').val());
+            var apellido = $.trim($('#txtApellido').val());
+            var userName = $.trim($('#txtUserName').val());
+            var password = $('#txtPassword').val();
+            var confirmPassword = $('#txtConfirmPassword').val();
+            var telefono = $.trim($('#txtTelefono').val());
+            var email = $.trim($('#txtEmail').val());
+            var direccion = $.trim($('#txtDireccion').val());
+
+            if (nombre === '') {
+                alertWarning('El nombre es requerido.');
+                $('#txtNombre').focus();
+                return;
+            }
+
+            if (apellido === '') {
+                alertWarning('El apellido es requerido.');
+                $('#txtApellido').focus();
+                return;
+            }
+
+            if (userName === '') {
+                alertWarning('El nombre de usuario es requerido.');
+                $('#txtUserName').focus();
+                return;
+            }
+
+            if (userName.length < 4) {
+                alertWarning('El usuario debe ser de mínimo 4 caracteres.');
+                $('#txtUserName').focus();
+                return;
+            }
+
+            if (password === '') {
+                alertWarning('La contraseña es requerida.');
+                $('#txtPassword').focus();
+                return;
+            }
+
+            if (confirmPassword === '') {
+                alertWarning('La confirmación de contraseña es requerida.');
+                $('#txtConfirmPassword').focus();
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alertWarning('La contraseña y la confirmación no coinciden.');
+                $('#txtConfirmPassword').focus();
+                return;
+            }
+
+            $('#btnRegister').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Registrando...');
+
+            $.ajax({
+                url: '@Url.Action("RegisterUser", "User")',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    nombre: nombre,
+                    apellido: apellido,
+                    userName: userName,
+                    password: password,
+                    confirmPassword: confirmPassword,
+                    telefono: telefono,
+                    email: email,
+                    direccion: direccion
+                },
+                success: function (result) {
+                    if (result.success) {
+                        alertSucces('Tu usuario fue creado correctamente, ahora puedes iniciar sesión.', 'Registro Exitoso')
+                            .then(function () {
+                                window.location.href = '@Url.Action("Index", "User")';
+                            });
+                    }
+                },
+                error: function (error) {
+                    errorHttp(error);
+                },
+                complete: function () {
+                    $('#btnRegister').prop('disabled', false).html('<i class="fa-solid fa-user-plus me-1"></i> Registrarse');
+                }
+            });
+        }
+    </script>
+}

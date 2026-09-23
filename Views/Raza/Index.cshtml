@@ -1,0 +1,270 @@
+@{
+    ViewData["Title"] = "Gestión de Razas";
+}
+
+<div class="row mb-3">
+    <div class="col-md-8 d-flex align-items-center gap-2">
+        <i class="bi bi-paw fs-3 text-primary"></i>
+        <h1 class="mb-0 text-primary">Listado de Razas</h1>
+    </div>
+
+    <div class="col-md-4 text-end">
+        <button type="button" class="btn btn-primary" onclick="openModal(false)">
+            <i class="fa-solid fa-circle-plus me-1"></i>
+            Crear Raza
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle w-100" id="tbraza">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Id</th>
+                            <th>Especie</th>
+                            <th>Nombre</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Crear / Editar Raza -->
+<div class="modal fade" id="modalRaza" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="IdTitleRaza">Crear Raza</h5>
+                <button type="button" class="btn-close" onclick="clearFormRaza()"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formRaza">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Especie <span class="text-danger">*</span></label>
+                            <select id="cmbEspecies" class="form-select">
+                                <option value="" disabled selected>Seleccione una especie</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtNombreRaza" maxlength="50" placeholder="Ej: Golden Retriever" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="clearFormRaza()">Cerrar</button>
+                <button id="btnModalSaveRaza" type="button" class="btn btn-success" onclick="onSaveRaza()">Crear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        var idRaza = 0;
+        var idEspecie = 0;
+        var listEspecies = [];
+
+        $(document).ready(function () {
+            getAllRazas();
+            getEspeciesCombo();
+        });
+
+        function getEspeciesCombo() {
+            $.ajax({
+                url: '@Url.Action("GetAllEspecies", "Especies")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    listEspecies = result;
+                    loadCmbEspecies(listEspecies);
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function loadCmbEspecies(data, selectedId) {
+            var cmb = $("#cmbEspecies");
+            cmb.empty();
+            cmb.append('<option value="" disabled ' + (!selectedId ? 'selected' : '') + '>Seleccione una especie</option>');
+            $.each(data, function (i, item) {
+                var isSelected = (selectedId && item.id == selectedId) ? 'selected' : '';
+                cmb.append('<option value="' + item.id + '" ' + isSelected + '>' + item.nombre + '</option>');
+            });
+        }
+
+        function getAllRazas() {
+            $.ajax({
+                url: '@Url.Action("GetAllRazas", "Raza")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    loadTable(result);
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function loadTable(data) {
+            $('#tbraza').DataTable({
+                data: data,
+                destroy: true,
+                responsive: true,
+                pageLength: 10,
+                order: [[0, 'asc']],
+                columns: [
+                    { data: 'id' },
+                    {
+                        data: 'especie',
+                        render: function (data) {
+                            return `<span class="badge rounded-pill bg-success">${data ?? 'Sin especie'}</span>`;
+                        }
+                    },
+                    { data: 'nombre', className: 'fw-bold' },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data) {
+                            return `
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            onclick="editRaza(${data.id}, ${data.idEspecie}, '${data.nombre.replace(/'/g, "\\'")}')"
+                                            title="Editar raza">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="deleteRaza(${data.id})"
+                                            title="Eliminar raza">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ]
+            });
+        }
+
+        function openModal(editMode) {
+            if (editMode) {
+                $('#IdTitleRaza').html('<i class="bi bi-pencil-square me-1"></i> Editar Raza');
+                $('#btnModalSaveRaza').html('Actualizar');
+            } else {
+                $('#IdTitleRaza').html('<i class="bi bi-plus-circle me-1"></i> Crear Raza');
+                $('#btnModalSaveRaza').html('Crear');
+            }
+            $('#modalRaza').modal('show');
+        }
+
+        function clearFormRaza() {
+            $('#txtNombreRaza').val('');
+            loadCmbEspecies(listEspecies);
+            idRaza = 0;
+            idEspecie = 0;
+            $('#modalRaza').modal('hide');
+        }
+
+        function editRaza(id, idEspecieParam, nombre) {
+            idRaza = id;
+            idEspecie = idEspecieParam;
+            $('#txtNombreRaza').val(nombre);
+            loadCmbEspecies(listEspecies, idEspecieParam);
+            openModal(true);
+        }
+
+        function onSaveRaza() {
+            idEspecie = parseInt($('#cmbEspecies').val()) || 0;
+            var nombre = $.trim($('#txtNombreRaza').val());
+
+            if (nombre === '') {
+                $('#txtNombreRaza').focus();
+                toastMessage('warning', 'El nombre es obligatorio');
+                return;
+            }
+
+            if (!idEspecie) {
+                $('#cmbEspecies').focus();
+                toastMessage('warning', 'Debe seleccionar una especie');
+                return;
+            }
+
+            if (idRaza === 0) {
+                addRaza(idEspecie, nombre);
+            } else {
+                updateRaza(idRaza, idEspecie, nombre);
+            }
+        }
+
+        function addRaza(idEspecieParam, nombre) {
+            $.ajax({
+                url: '@Url.Action("AddRaza", "Raza")',
+                method: 'POST',
+                data: JSON.stringify({ idEspecie: idEspecieParam, nombre: nombre }),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function () {
+                    alertSucces('Raza creada exitosamente');
+                    clearFormRaza();
+                    getAllRazas();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function updateRaza(id, idEspecieParam, nombre) {
+            $.ajax({
+                url: '@Url.Action("UpdateRaza", "Raza")',
+                method: 'PUT',
+                data: JSON.stringify({ id: id, idEspecie: idEspecieParam, nombre: nombre }),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function () {
+                    alertSucces('Raza actualizada exitosamente');
+                    clearFormRaza();
+                    getAllRazas();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function deleteRaza(id) {
+            alertDelete().then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteRaza", "Raza")',
+                        method: 'DELETE',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function () {
+                            toastMessage('success', 'Raza eliminada exitosamente');
+                            getAllRazas();
+                        },
+                        error: function (error) {
+                            errorHttp(error);
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

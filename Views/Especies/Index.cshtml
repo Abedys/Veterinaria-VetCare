@@ -1,13 +1,218 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "Gestión de Especies";
+}
 
-   <h1>Bienvenido al Modulo de Especies</h1>
+<div class="row mb-3">
+    <div class="col-md-8 d-flex align-items-center gap-2">
+        <i class="bi bi-paw fs-3 text-primary"></i>
+        <h1 class="mb-0 text-primary">Listado de Especies</h1>
+    </div>
 
+    <div class="col-md-4 text-end">
+        <button type="button" class="btn btn-primary" onclick="openModal(false)">
+            <i class="fa-solid fa-circle-plus me-1"></i>
+            Crear Especie
+        </button>
+    </div>
+</div>
 
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle w-100" id="tbespecie">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Id</th>
+                            <th>Nombre</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Modal para Crear / Editar Especie -->
+<div class="modal fade" id="modalEspecie" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="IdTitleEspecie">Crear Especie</h5>
+                <button type="button" class="btn-close" onclick="clearFormEspecie()"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEspecie">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtNombreEspecie" maxlength="50" placeholder="Ej: Perro" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" onclick="clearFormEspecie()">Cerrar</button>
+                <button id="btnModalSaveEspecie" type="button" class="btn btn-success" onclick="onSaveEspecie()">Crear</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+@section Scripts {
+    <script type="text/javascript">
+        var idEspecie = 0;
 
+        $(document).ready(function () {
+            getAllEspecies();
+        });
 
+        function getAllEspecies() {
+            $.ajax({
+                url: '@Url.Action("GetAllEspecies", "Especies")',
+                method: 'GET',
+                dataType: 'json',
+                success: function (result) {
+                    loadTable(result);
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function loadTable(data) {
+            $('#tbespecie').DataTable({
+                data: data,
+                destroy: true,
+                responsive: true,
+                pageLength: 10,
+                order: [[0, 'asc']],
+                columns: [
+                    { data: 'id' },
+                    { data: 'nombre', className: 'fw-bold' },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data) {
+                            return `
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            onclick="editEspecie(${data.id}, '${data.nombre.replace(/'/g, "\\'")}')"
+                                            title="Editar especie">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="deleteEspecie(${data.id})"
+                                            title="Eliminar especie">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                ]
+            });
+        }
+
+        function openModal(editMode) {
+            if (editMode) {
+                $('#IdTitleEspecie').html('<i class="bi bi-pencil-square me-1"></i> Editar Especie');
+                $('#btnModalSaveEspecie').html('Actualizar');
+            } else {
+                $('#IdTitleEspecie').html('<i class="bi bi-plus-circle me-1"></i> Crear Especie');
+                $('#btnModalSaveEspecie').html('Crear');
+            }
+            $('#modalEspecie').modal('show');
+        }
+
+        function clearFormEspecie() {
+            $('#txtNombreEspecie').val('');
+            idEspecie = 0;
+            $('#modalEspecie').modal('hide');
+        }
+
+        function editEspecie(id, nombre) {
+            idEspecie = id;
+            $('#txtNombreEspecie').val(nombre);
+            openModal(true);
+        }
+
+        function onSaveEspecie() {
+            var nombre = $.trim($('#txtNombreEspecie').val());
+
+            if (nombre === '') {
+                $('#txtNombreEspecie').focus();
+                toastMessage('warning', 'El nombre es obligatorio');
+                return;
+            }
+
+            if (idEspecie === 0) {
+                addEspecie(nombre);
+            } else {
+                updateEspecie(idEspecie, nombre);
+            }
+        }
+
+        function addEspecie(nombre) {
+            $.ajax({
+                url: '@Url.Action("AddEspecie", "Especies")',
+                method: 'POST',
+                data: JSON.stringify({ nombre: nombre }),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function () {
+                    alertSucces('Especie creada exitosamente');
+                    clearFormEspecie();
+                    getAllEspecies();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function updateEspecie(id, nombre) {
+            $.ajax({
+                url: '@Url.Action("UpdateEspecie", "Especies")',
+                method: 'PUT',
+                data: JSON.stringify({ id: id, nombre: nombre }),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function () {
+                    alertSucces('Especie actualizada exitosamente');
+                    clearFormEspecie();
+                    getAllEspecies();
+                },
+                error: function (error) {
+                    errorHttp(error);
+                }
+            });
+        }
+
+        function deleteEspecie(id) {
+            alertDelete().then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteEspecie", "Especies")',
+                        method: 'DELETE',
+                        data: { id: id },
+                        dataType: 'json',
+                        success: function () {
+                            toastMessage('success', 'Especie eliminada exitosamente');
+                            getAllEspecies();
+                        },
+                        error: function (error) {
+                            errorHttp(error);
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 }

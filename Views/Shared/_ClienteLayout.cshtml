@@ -14,57 +14,37 @@
           crossorigin="anonymous">
 </head>
 
-
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-heart-pulse text-primary"></i> Veterinaria
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse" aria-controls="sidebarCollapse"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                @{
-                    var isLogged = !string.IsNullOrEmpty(Context.Session.GetString("UserName"));
-                }
-
-                @if (isLogged)
-                {
-                    <div class="navbar-collapse collapse w-100" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto align-items-center gap-2">
-                            <li class="nav-item">
-                                <span class="navbar-text fw-semibold">
-                                    <i class="bi bi-person-circle text-primary me-1"></i>@Context.Session.GetString("FullName")
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-danger btn-sm" asp-area="" asp-controller="User" asp-action="Logout">
-                                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                }
-                else
-                {
-                    <div class="navbar-collapse collapse w-100" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto align-items-center gap-2">
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm" asp-area="" asp-controller="User" asp-action="Index">
-                                    <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-primary btn-sm" asp-area="" asp-controller="User" asp-action="Register">
-                                    <i class="bi bi-person-plus"></i> Registrarse
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                }
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto align-items-center gap-2">
+                        <li class="nav-item">
+                            <span class="navbar-text fw-semibold">
+                                <i class="bi bi-person-circle text-primary me-1"></i>@Context.Session.GetString("FullName")
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">
+                                <i class="bi bi-person-heart me-1"></i>@Context.Session.GetString("UserRol")
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-danger btn-sm" asp-area="" asp-controller="User" asp-action="Logout">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
     </header>
@@ -75,24 +55,44 @@
             <img src="/img/Cube-loading.gif" alt="loading..." id="loadingimg" />
             <p>Cargando...</p>
         </div>
-
     </div>
 
+    <div class="container-fluid admin-container">
+        <div class="row">
+            <!-- Sidebar vertical del cliente -->
+            <aside class="col-lg-2 col-md-3 d-md-block bg-white border-end sidebar-wrapper" id="sidebarCollapse">
+                <nav class="navbar navbar-expand-md align-content-start w-100 p-0">
+                    <div class="collapse navbar-collapse show d-md-flex flex-column align-items-stretch w-100" id="navbarCollapse">
+                        <ul class="nav flex-column w-100 mt-2">
+                            <li class="nav-item">
+                                <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Mascotas" ? "active" : "")"
+                                   asp-controller="Clientes" asp-action="Mascotas">
+                                    <i class="bi bi-paw me-2"></i>Mis Mascotas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Perfil" ? "active" : "")"
+                                   asp-controller="Clientes" asp-action="Perfil">
+                                    <i class="bi bi-person-lines-fill me-2"></i>Mi Perfil
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </aside>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Veterinaria - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <!-- Contenido central -->
+            <main role="main" class="col-lg-10 col-md-9 content-wrapper p-4">
+                @RenderBody()
+            </main>
         </div>
-    </footer>
 
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2026 - Veterinaria - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </div>
+        </footer>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -109,20 +109,16 @@
     <!-- esto es para poder el lenguaje del datable en español-->
     <script>
         $.extend(true, $.fn.dataTable.default, {
-            lenguaje: {
+            language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.3.8/i18n/es-ES.json'
             }
         });
-
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 
-
     <script>
-
-        //Funcion para amndar mensajes de Alerta a los Usuarios
-        function toastMessage(type, message){
+        function toastMessage(type, message) {
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -141,33 +137,31 @@
             });
         }
 
-        function alertDelete(){
+        function alertDelete() {
             return Swal.fire({
-                title:'¿Confirmar eliminación?',
-                text:'¡No podrás revertir esto!',
-                icon:'question',
-                showCancelButton:true,
-                cancelButtonText:'Cancelar',
-                confirmButtonText:'Si, eliminar!',
+                title: '¿Confirmar eliminación?',
+                text: '¡No podrás revertir esto!',
+                icon: 'question',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Si, eliminar!',
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
             });
         }
 
-
         function alertSucces(message, title = null) {
             const alertTitle = title != null ? title : "Exitoso!";
             return Swal.fire({
-                 title: alertTitle,
-                 text: message,
-                 icon: 'success',
-                 confirmButtonColor: '#3085d6',
-                 confirmButtonText: 'Aceptar!',
+                title: alertTitle,
+                text: message,
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'Aceptar!',
             });
         }
 
         function alertWarning(message, title = null) {
-
             const alertTitle = title != null ? title : "Alerta!";
             return Swal.fire({
                 title: alertTitle,
@@ -179,7 +173,6 @@
         }
 
         function alertError(message, title = null) {
-
             const alertTitle = title != null ? title : "Opps!";
             return Swal.fire({
                 title: alertTitle,
@@ -188,33 +181,24 @@
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'Aceptar!',
             });
-
         }
 
-        function errorHttp(error){
-            if (error.status == 400 || 401){
-
+        function errorHttp(error) {
+            if (error.status == 400 || error.status == 401) {
                 alertWarning(error.responseJSON.message)
-            }else
-            {
+            } else {
                 alertError(error.responseJSON.message)
-
             }
             console.error(error);
-
         }
 
-
-        //mostrar el leader durante las solicitudes AJAX
-        $(document).ajaxStart(function(){
+        $(document).ajaxStart(function () {
             $("#overlay").css("display", "flex");
         });
 
         $(document).ajaxStop(function () {
             $("#overlay").css("display", "none");
         });
-
-
     </script>
 </body>
 </html>
