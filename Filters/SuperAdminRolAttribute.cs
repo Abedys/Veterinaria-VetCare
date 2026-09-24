@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using MVC.Common.Enums;
 using MVC.Data.DTO;
 
-namespace Veterinaria.Handlers
+namespace Veterinaria.Filters
 {
+    //filtro para gestion de usuarios- solo el rol -"SuperAdmin" puede acceder
     public class SuperAdminRolAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)

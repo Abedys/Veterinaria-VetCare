@@ -1,28 +1,24 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using MVC.Common.Enums;
 using MVC.Data.DTO;
 
-namespace Veterinaria.Handlers
+namespace Veterinaria.Filters
 {
-    public class ClienteRolAttribute : ActionFilterAttribute
+    public class UserRolAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            string? rol = context.HttpContext.Session.GetString("UserRol");
+            string? userId = context.HttpContext.Session.GetString("UserId");
 
-            bool isCliente = !string.IsNullOrEmpty(rol) &&
-                             rol.Equals(Enumeraciones.RolUser.Cliente.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            if (!isCliente)
+            if (string.IsNullOrEmpty(userId))
             {
                 if (IsAjaxRequest(context))
                 {
                     context.Result = new UnauthorizedObjectResult(new ResponseDto
                     {
                         Success = false,
-                        Message = "No autorizado. Debes iniciar sesión como cliente."
+                        Message = "No autorizado. Debes iniciar sesión."
                     });
                 }
                 else

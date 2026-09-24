@@ -3,8 +3,8 @@ using MVC.Data.DataContext;
 using MVC.Data.Seed;
 using MVC.Domain.servicios.Clientes;
 using MVC.Domain.servicios.Clientes.interfaces;
-using MVC.Domain.servicios.Mascotas;
-using MVC.Domain.servicios.Mascotas.interfaces;
+using MVC.Domain.servicios.Admin;
+using MVC.Domain.servicios.Admin.interfaces;
 using MVC.Domain.servicios.seguridad;
 using MVC.Domain.servicios.seguridad.interfaces;
 using Veterinaria.Handlers;
@@ -19,6 +19,7 @@ namespace Veterinaria
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
@@ -42,6 +43,7 @@ namespace Veterinaria
             builder.Services.AddScoped<IFileServices, FileServices>();
             builder.Services.AddScoped<IHostingEviromentServices, HostingEviromentHandler>();
             builder.Services.AddScoped<IUserServices, UserServices>();
+            builder.Services.AddScoped<IUserSessionServices, UserSessionServices>();
             builder.Services.AddScoped<IClienteServices, ClienteServices>();
 
             // Seed de datos iniciales

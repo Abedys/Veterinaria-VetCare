@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using MVC.Data.DTO.Mascotas;
 using MVC.Data.DTO.User;
 using MVC.Domain.servicios.Clientes.interfaces;
-using MVC.Domain.servicios.Mascotas.interfaces;
+using MVC.Domain.servicios.Admin.interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Veterinaria.Filters;
 using Veterinaria.Handlers;
 
 namespace Veterinaria.Controllers

@@ -1,4 +1,4 @@
-﻿using MVC.Domain.servicios.Mascotas.interfaces;
+﻿using MVC.Domain.servicios.Admin.interfaces;
 
 namespace Veterinaria.Handlers
 {

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using MVC.Common.Enums;
 using MVC.Data.DTO;
 
-namespace Veterinaria.Handlers
+namespace Veterinaria.Filters
 {
     public class AdminRolAttribute : ActionFilterAttribute
     {
