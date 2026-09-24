@@ -51,6 +51,30 @@ body {
     color: white;
 }
 
+/* ===== Navbar responsivo: apilar el menú debajo del botón hamburguesa ===== */
+@media (max-width: 991.98px) {
+    .navbar > .container-fluid {
+        flex-wrap: wrap;
+    }
+
+    .navbar-collapse {
+        flex-basis: 100%;
+        flex-grow: 1;
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    .navbar-collapse .navbar-nav {
+        margin-left: auto !important;
+        width: auto;
+        align-items: flex-end;
+    }
+
+    .navbar-collapse .navbar-nav .nav-item {
+        width: auto;
+    }
+}
+
 /* ===== Layout administrativo: sidebar vertical ===== */
 .admin-container {
     min-height: calc(100vh - 60px);
