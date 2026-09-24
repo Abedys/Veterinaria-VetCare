@@ -9,7 +9,6 @@ using Veterinaria.Handlers;
 namespace Veterinaria.Controllers
 {
     [TypeFilter(typeof(CustomExceptionHandler))]
-    [AdminRol]
     public class EspeciesController : Controller
     {
         private readonly IEspecieServices _especieServices;
@@ -19,11 +18,13 @@ namespace Veterinaria.Controllers
             _especieServices = especieServices;
         }
 
+        [AdminRol]
         public IActionResult Index()
         {
             return View();
         }
 
+        [UserRol]
         [HttpGet("GetAllEspecies")]
         public async Task<IActionResult> GetAllEspecies()
         {
@@ -31,6 +32,7 @@ namespace Veterinaria.Controllers
             return Ok(result);
         }
 
+        [AdminRol]
         [HttpPost("AddEspecie")]
         public async Task<IActionResult> AddEspecie([FromBody] AddEspecieDTO add)
         {
@@ -38,6 +40,7 @@ namespace Veterinaria.Controllers
             return Ok(success);
         }
 
+        [AdminRol]
         [HttpPut("UpdateEspecie")]
         public async Task<IActionResult> UpdateEspecie([FromBody] UpdateEspecieDTO update)
         {
@@ -45,6 +48,7 @@ namespace Veterinaria.Controllers
             return Ok(success);
         }
 
+        [AdminRol]
         [HttpDelete("DeleteEspecie")]
         public async Task<IActionResult> DeleteEspecie(int id)
         {

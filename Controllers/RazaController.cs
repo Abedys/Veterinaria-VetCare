@@ -9,7 +9,6 @@ using Veterinaria.Handlers;
 namespace Veterinaria.Controllers
 {
     [TypeFilter(typeof(CustomExceptionHandler))]
-    [AdminRol]
     public class RazaController : Controller
     {
         #region Properties
@@ -24,6 +23,7 @@ namespace Veterinaria.Controllers
         #endregion
 
         #region Views
+        [AdminRol]
         public IActionResult Index()
         {
             return View();
@@ -31,6 +31,7 @@ namespace Veterinaria.Controllers
         #endregion
 
         #region Services
+        [UserRol]
         [HttpGet("GetAllRazas")]
         public async Task<IActionResult> GetAllRazas()
         {
@@ -38,6 +39,7 @@ namespace Veterinaria.Controllers
             return Ok(entities);
         }
 
+        [UserRol]
         [HttpGet("GetRazasByEspecie")]
         public async Task<IActionResult> GetRazasByEspecie(int idEspecie)
         {
@@ -45,6 +47,7 @@ namespace Veterinaria.Controllers
             return Ok(entities);
         }
 
+        [AdminRol]
         [HttpPost("AddRaza")]
         public async Task<IActionResult> AddRaza([FromBody] AddRazaDTO add)
         {
@@ -52,6 +55,7 @@ namespace Veterinaria.Controllers
             return Ok(success);
         }
 
+        [AdminRol]
         [HttpPut("UpdateRaza")]
         public async Task<IActionResult> UpdateRaza([FromBody] UpdateRazaDTO update)
         {
@@ -59,6 +63,7 @@ namespace Veterinaria.Controllers
             return Ok(success);
         }
 
+        [AdminRol]
         [HttpDelete("DeleteRaza")]
         public async Task<IActionResult> DeleteRaza(int id)
         {

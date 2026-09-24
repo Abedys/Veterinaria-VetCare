@@ -190,7 +190,7 @@
         // ============================================
         function getEspeciesCombo(selectedId = null) {
             $.ajax({
-                url: '@Url.Action("GetEspeciesCliente", "Clientes")',
+                url: '@Url.Action("GetAllEspecies", "Especies")',
                 method: 'GET',
                 dataType: 'json',
                 success: function (result) {
@@ -228,7 +228,7 @@
             }
 
             $.ajax({
-                url: '@Url.Action("GetRazasByEspecieCliente", "Clientes")',
+                url: '@Url.Action("GetRazasByEspecie", "Raza")',
                 method: 'GET',
                 data: { idEspecie: idEspecieParam },
                 dataType: 'json',
