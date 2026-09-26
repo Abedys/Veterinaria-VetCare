@@ -279,12 +279,14 @@
             });
         }
 
+        //funcion de configuracion del LoadTable
         function loadTable(data) {
             $('#tbmascota').DataTable({
                 data: data,
-                destroy: true,
-                responsive: true,
-                pageLength: 10,
+                destroy: true, //si ya tengo una datatable creada y modifico algo, destruye a tabla y la vuelva a mostrar renovada
+                responsive: true, // hace la tabla responsiva
+                pageLength: 10, //indica cuantas mascotas muestra incialmente 10
+                //no me queria cambiar el lenguaje de la datable entonces lo cambie manualmente desd e la funcion 
                 language: {
                     search: "Buscar:",
                     lengthMenu: "Mostrar _MENU_ mascotas",
@@ -367,9 +369,9 @@
             });
         }
 
-        // ============================================
+        
         // Modal y Galería de Fotos
-        // ============================================
+       
         function openModal(editMode) {
             if (editMode) {
                 $('#modalTitleMascota').html('<i class="bi bi-pencil-square me-1"></i> Editar Mascota');
@@ -384,6 +386,7 @@
             $('#modalMascota').modal('show');
         }
 
+        //funcion que limpia el formulario despues de ser utilizado
         function clearFormMascota() {
             $('#txtNombre').val('');
             $('#txtFechaNacimiento').val('');
@@ -417,15 +420,18 @@
             });
         }
 
+        //funcion que muestra las imagenees de la mascota
         function renderMascotaImages(images) {
             var gallery = $('#mascotaImagesGallery');
             gallery.empty();
 
+            //aqui valida si hay imagenes para la mascota sino muestra un mensaje
             if (!images || images.length === 0) {
                 gallery.append('<p class="text-muted mb-0 small fst-italic">No hay fotos registradas para esta mascota.</p>');
                 return;
             }
 
+            //si hay imagene spara la mascota las muestra
             $.each(images, function (i, image) {
                 gallery.append(`
                     <div class="position-relative border rounded p-1 bg-white shadow-sm" style="width:110px;">
@@ -444,6 +450,8 @@
                 GLightbox({ selector: '#mascotaImagesGallery .glightbox' });
             }
         }
+
+        //funcion que elimina una imagen de una mascota
 
         function deleteMascotaImage(idFile, idMascotaParam) {
             alertDelete().then((result) => {
@@ -465,14 +473,15 @@
             });
         }
 
-        // ============================================
+        
         // Operaciones CRUD (Crear, Editar, Eliminar)
-        // ============================================
+        
         function editMascota(id) {
-            var mascota = listMascotas.find(m => m.id == id);
-            if (!mascota) return;
+            var mascota = listMascotas.find(m => m.id == id); //find busca dentro de una lista de mascotas ya existente, busca el id recibido
+            if (!mascota) return; //si no encuentra nada termina la funcion
 
-            idMascota = mascota.id;
+            //si encuentra el id, rellana los cambos conla informacion de ese id
+            idMascota = mascota.id; 
             $('#txtNombre').val(mascota.nombre);
             $('#txtFechaNacimiento').val(mascota.fechaNacimiento ? mascota.fechaNacimiento.substring(0, 10) : '');
             $('#txtPeso').val(mascota.peso);
@@ -487,6 +496,7 @@
             openModal(true);
         }
 
+        //funcion que valida el formulario
         function validateForm() {
             if ($.trim($('#txtNombre').val()) === '') {
                 $('#txtNombre').focus();
@@ -516,15 +526,17 @@
         }
 
         function onSaveMascota() {
-            if (!validateForm()) return;
+            if (!validateForm()) return; //si validate no es true termina la funcion
 
-            if (idMascota === 0) {
+            if (idMascota === 0) { //si mascota selecionada es igual a 0 , agregamascota
                 addMascota();
             } else {
-                updateMascota();
+                updateMascota(); //si el id selecionado es diferente de 0 entonces edita mascota, 
             }
+            //como el id selecionado en editar siempre va ser diferente de 0 enonces asi es como se abre el editar
         }
 
+        //funcion para agregar una nueva mascota
         function addMascota() {
             var formData = new FormData();
             formData.append('Nombre', $.trim($('#txtNombre').val()));
@@ -562,10 +574,13 @@
             });
         }
 
+        //funcion que actualiza la mascota
         function updateMascota() {
+            //aqui creamos un objecto formData que para llenar este objecto captura la informacion del los campos del formularios
+            //campos del formularios ya llenos por editMascota(id) , que trae la informacion al formulario segun el id selecionado
             var formData = new FormData();
             formData.append('Id', idMascota);
-            formData.append('Nombre', $.trim($('#txtNombre').val()));
+            formData.append('Nombre', $.trim($('#txtNombre').val())); //trim sirve para quitar espacios al inicoo y al final
             formData.append('Peso', parseFloat($('#txtPeso').val()));
             formData.append('IdRaza', parseInt($('#cmbRazas').val()));
 
@@ -592,7 +607,9 @@
             });
         }
 
+        //funcion que elimina una mascota
         function deleteMascota(id) {
+            //aqui validamos que si la alerta de confirma eliminacion es confirmada entonces procede a eliminar la mascota
             alertDelete().then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
