@@ -267,15 +267,21 @@
                 dataType: 'json',
                 success: function (result) {
                     listRazas = result;
-                    cmbRaza.append('<option value="" disabled ' + (!selectedRazaId ? 'selected' : '') + '>Seleccione una raza</option>');
-                    $.each(result, function (i, item) {
-                        var isSelected = (selectedRazaId && item.id == selectedRazaId) ? 'selected' : '';
-                        cmbRaza.append('<option value="' + item.id + '" ' + isSelected + '>' + item.nombre + '</option>');
-                    });
+                    loadCmbRazas(listRazas, selectedRazaId);
                 },
                 error: function (error) {
                     console.error(error);
                 }
+            });
+        }
+
+        //funcion que recorre los datos para poblar el combo de razas
+        function loadCmbRazas(data, selectedRazaId) {
+            var cmbRaza = $("#cmbRazas");
+            cmbRaza.append('<option value="" disabled ' + (!selectedRazaId ? 'selected' : '') + '>Seleccione una raza</option>');
+            $.each(data, function (i, item) {
+                var isSelected = (selectedRazaId && item.id == selectedRazaId) ? 'selected' : '';
+                cmbRaza.append('<option value="' + item.id + '" ' + isSelected + '>' + item.nombre + '</option>');
             });
         }
 

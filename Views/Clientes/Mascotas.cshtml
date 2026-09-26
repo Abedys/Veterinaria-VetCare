@@ -126,9 +126,9 @@
             $('#fileMascota').on('change', onFileMascotaChange);
         });
 
-        // ============================================
+       
         // Gestión del Selector de Archivos
-        // ============================================
+       
         function triggerFileMascota() {
             $('#fileMascota').click();
         }
@@ -157,6 +157,7 @@
             }
         }
 
+        //funcion para añadir una imagen
         function addMascotaImages() {
             var fileInput = $('#fileMascota')[0];
 
@@ -185,16 +186,18 @@
             });
         }
 
-        // ============================================
+        
         // Carga de Combos (Especies, Razas)
-        // ============================================
+        //combos encadenado
+      
+        //funcion para traer todas las especies
         function getEspeciesCombo(selectedId = null) {
             $.ajax({
                 url: '@Url.Action("GetAllEspecies", "Especies")',
                 method: 'GET',
                 dataType: 'json',
                 success: function (result) {
-                    loadCmbEspecies(result, selectedId);
+                    loadCmbEspecies(result, selectedId);  //aqui llamaos la funcion que va llenar el comobos
                 },
                 error: function (error) {
                     console.error(error);
@@ -202,6 +205,7 @@
             });
         }
 
+        //funcion que recorre la nada para permiter selecionar una opcion en el combobox
         function loadCmbEspecies(data, selectedId) {
             var cmb = $("#cmbEspecies");
             cmb.empty();
@@ -212,12 +216,14 @@
             });
         }
 
+        //funcion que se dispara cuando se cambia la especie, resetea las razas y cargas las nuevas raza de la nueva especie
         function changeCmbEspecies() {
             idEspecie = parseInt($('#cmbEspecies').val()) || 0;
             idRaza = 0;
             getRazasByEspecie(idEspecie);
         }
 
+        //funcion para obtener las razas de una especie y llenar el 
         function getRazasByEspecie(idEspecieParam, selectedRazaId = null) {
             var cmbRaza = $("#cmbRazas");
             cmbRaza.empty();
@@ -233,15 +239,21 @@
                 data: { idEspecie: idEspecieParam },
                 dataType: 'json',
                 success: function (result) {
-                    cmbRaza.append('<option value="" disabled ' + (!selectedRazaId ? 'selected' : '') + '>Seleccione una raza</option>');
-                    $.each(result, function (i, item) {
-                        var isSelected = (selectedRazaId && item.id == selectedRazaId) ? 'selected' : '';
-                        cmbRaza.append('<option value="' + item.id + '" ' + isSelected + '>' + item.nombre + '</option>');
-                    });
+                    loadCmbRazas(result, selectedRazaId);
                 },
                 error: function (error) {
                     console.error(error);
                 }
+            });
+        }
+
+        //funcion que recorre los datos para poblar el combo de razas
+        function loadCmbRazas(data, selectedRazaId) {
+            var cmbRaza = $("#cmbRazas");
+            cmbRaza.append('<option value="" disabled ' + (!selectedRazaId ? 'selected' : '') + '>Seleccione una raza</option>');
+            $.each(data, function (i, item) {
+                var isSelected = (selectedRazaId && item.id == selectedRazaId) ? 'selected' : '';
+                cmbRaza.append('<option value="' + item.id + '" ' + isSelected + '>' + item.nombre + '</option>');
             });
         }
 
@@ -367,6 +379,7 @@
                 $('#modalTitleMascota').html('<i class="bi bi-plus-circle me-1"></i> Crear Mascota');
                 $('#btnModalSave').html('Crear');
                 $('#sectionMascotaImages').hide();
+                getEspeciesCombo();
             }
             $('#modalMascota').modal('show');
         }

@@ -196,6 +196,7 @@
         }
 
         function deleteEspecie(id) {
+            console.log(id);
             alertDelete().then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({

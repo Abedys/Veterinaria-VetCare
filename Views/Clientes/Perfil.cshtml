@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<!-- Tarjeta de Perfil -->
+<!-- formulario de actualizacion de campos  de Perfil -->
 <div class="row">
     <div class="col-md-8 col-lg-6">
         <div class="card shadow-sm">
@@ -65,6 +65,7 @@
             getPerfil();
         });
 
+        //funcion que trae los datos del cliente que se logio al panel cliente exactamente a perfil
         function getPerfil() {
             $.ajax({
                 url: '@Url.Action("GetPerfilCliente", "Clientes")',
@@ -79,6 +80,7 @@
             });
         }
 
+        //funcion que llena los campos del formulario en el perfil del cliente
         function populatePerfil(perfil) {
             if (!perfil) return;
             $('#txtUserName').val(perfil.userName);
@@ -89,6 +91,7 @@
             $('#txtDireccion').val(perfil.direccion ?? '');
         }
 
+        //funcion para validar el perfil del usuario
         function validatePerfil() {
             if ($.trim($('#txtNombre').val()) === '') {
                 $('#txtNombre').focus();
@@ -105,9 +108,11 @@
             return true;
         }
 
+        //funcion para actualizar un registro en el perfil del cliente
         function savePerfil() {
             if (!validatePerfil()) return;
 
+            //aqui llena los campos modificados del perfil
             var dto = {
                 nombre: $.trim($('#txtNombre').val()),
                 apellido: $.trim($('#txtApellido').val()),
@@ -116,6 +121,7 @@
                 direccion: $.trim($('#txtDireccion').val())
             };
 
+            //aqui los enviamos
             $.ajax({
                 url: '@Url.Action("UpdatePerfilCliente", "Clientes")',
                 method: 'PUT',
